@@ -5,10 +5,8 @@ document.addEventListener("DOMContentLoaded", function() {
     const unitSwitch = document.getElementById("unitSwitch");
     const unitLabel = document.getElementById("unitLabel");
 
-    
     let isMetric = true;
 
-    
     const conversionFactors = {
         'metric cup': 250,
         '1/4 cup': 62.5,
@@ -18,7 +16,7 @@ document.addEventListener("DOMContentLoaded", function() {
         'tbs': 15,
     };
     
-    const ingredients = [
+    const originalIngredients = [
         { ingredient: 'Red Royale potatoes', quantity: '3', amount: 'N/A' },
         { ingredient: 'olive oil', quantity: '2 tbs', amount: conversionFactors['tbs'] * 2 + ' g' },
         { ingredient: 'garlic clove, crushed', quantity: '1', amount: 'N/A' },
@@ -31,7 +29,9 @@ document.addEventListener("DOMContentLoaded", function() {
         { ingredient: 'lime juice', quantity: '1 tbs', amount: conversionFactors['tbs'] + ' g' },
         { ingredient: 'Mixed salad leaves', quantity: 'to serve', amount: 'N/A' }
     ];
-    
+
+    const ingredients = JSON.parse(JSON.stringify(originalIngredients));
+
     function formatAmount(amountInGrams) {
         if (isMetric) {
             if (amountInGrams >= 1000) {
@@ -66,16 +66,20 @@ document.addEventListener("DOMContentLoaded", function() {
         const servings = parseInt(slider.value);
         servingsDisplay.textContent = `Servings: ${servings}`;
 
-        ingredients.forEach(item => {
-            if (item.ingredient === 'Coles RSPCA Approved Chicken Breast Fillets') {
+        ingredients.forEach((item, index) => {
+            const originalItem = originalIngredients[index];
+            if (originalItem.ingredient === 'Coles RSPCA Approved Chicken Breast Fillets') {
                 const amountInGrams = 1000 * servings / 4;
                 item.amount = formatAmount(amountInGrams); 
             } else {
-                if (!isNaN(parseFloat(item.quantity))) {
-                    item.quantity = Math.round(parseFloat(item.quantity) * servings / 4);
+                item.quantity = originalItem.quantity;
+                item.amount = originalItem.amount;
+                
+                if (!isNaN(parseFloat(originalItem.quantity))) {
+                    item.quantity = Math.round(parseFloat(originalItem.quantity) * servings / 4);
                 }
-                if (!isNaN(parseFloat(item.amount)) && item.amount !== 'N/A') {
-                    const amountInGrams = parseFloat(item.amount.split(' ')[0]) * servings / 4;
+                if (!isNaN(parseFloat(originalItem.amount)) && originalItem.amount !== 'N/A') {
+                    const amountInGrams = parseFloat(originalItem.amount.split(' ')[0]) * servings / 4;
                     item.amount = formatAmount(amountInGrams);
                 }
             }
@@ -93,4 +97,5 @@ document.addEventListener("DOMContentLoaded", function() {
     unitSwitch.addEventListener('change', toggleUnits);
     
     populateIngredientsTable();
+    updateAmount(); 
 });
